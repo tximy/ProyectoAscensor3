@@ -75,6 +75,12 @@ def Planta(Accion):
   global PlantaDestino
   global ParadasSubiendo
   global ParadasBajando
+  if Estado=='Bajando' and PlantaDestino>PlantaActual:
+    Estado='Subiendo'
+    Accion='Subir'
+  if Estado=='Subiendo' and PlantaDestino<PlantaActual:
+    Estado='Bajando'
+    Accion='Bajar'
   if Accion=='Subir':
     if (not LeerEntrada('FCAlto')) and (PlantaActual<4) and (PlantaActual<PlantaDestino):
       Estado='Subiendo'
@@ -118,7 +124,7 @@ def Planta(Accion):
           Estado='Libre'
           iEstado.ActivaLeds(Estado)
   if Accion=='Bajar':
-    if (not LeerEntrada('FCBajo')) and (PlantaActual>0) and (not (PlantaActual==PlantaDestino)):
+    if (not LeerEntrada('FCBajo')) and (PlantaActual>0) and (PlantaActual>PlantaDestino):
       Estado='Bajando'
       iEstado.ActivaLeds(Estado)
       b=0
@@ -137,21 +143,21 @@ def Planta(Accion):
       while PlantaActual in ParadasBajando:
         ParadasBajando.remove(PlantaActual)
         if PlantaActual==0 and (len(ParadasSubiendo)>0):
-          #print ' bajando planta actual 0 y con paradas subiendo'
+          print ' bajando planta actual 0 y con paradas subiendo'
           Estado='Subiendo'
           iEstado.ActivaLeds(Estado)
           PlantaDestino=ParadasSubiendo[0]
         if PlantaActual==0 and (len(ParadasSubiendo)==0):
-          #print ' bajando planta actual 0 y sin paradas subiendo'
+          print ' bajando planta actual 0 y sin paradas subiendo'
           Estado='Libre'
           iEstado.ActivaLeds(Estado)
         if PlantaActual<4 and (len(ParadasSubiendo)>0) and (len(ParadasBajando)==0):
-          #print ' bajando sin paradas bajando y con paradas subiendo'
+          print ' bajando sin paradas bajando y con paradas subiendo'
           Estado='Subiendo'
           PlantaDestino=ParadasSubiendo[0]
           iEstado.ActivaLeds(Estado)
         if (len(ParadasBajando)==0) and (len(ParadasSubiendo)==0):
-          #print ' bajando sin paradas ni subiendo ni bajando'
+          print ' bajando sin paradas ni subiendo ni bajando'
           Estado='Libre'
           iEstado.ActivaLeds(Estado)
 
@@ -255,9 +261,9 @@ def ActualizarMemorias():
     if Estado=='Bajando' and PlantaActual>ParadasBajando[0]:
       PlantaDestino=ParadasBajando[0]
     
-  #print 'paradas subiendo '+ str(ParadasSubiendo)+' paradas bajando '+str(ParadasBajando)    
-  #print 'planta actual '+ str(PlantaActual)+' planta destino'+str(PlantaDestino)
-  #print Estado
+  print 'paradas subiendo '+ str(ParadasSubiendo)+' paradas bajando '+str(ParadasBajando)    
+  print 'planta actual '+ str(PlantaActual)+' planta destino'+str(PlantaDestino)
+  print Estado
       
     
     
