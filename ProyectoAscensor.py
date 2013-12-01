@@ -110,19 +110,23 @@ def Planta(Accion):
           Estado='Libre'
           iEstado.ActivaLeds(Estado)
         if PlantaActual>0 and (len(ParadasBajando)>0) and (len(ParadasSubiendo)==0):
-          if ParadasBajando[0] > PlantaActual: 
+          if (not(PlantaDestino in ParadasBajando))and (ParadasBajando[0] > PlantaActual): 
             Estado='Subiendo'
             ParadasSubiendo.append(ParadasBajando[0])
             PlantaDestino=ParadasSubiendo[0]
             while PlantaDestino in ParadasBajando:
               ParadasBajando.remove(PlantaDestino)
-          else:  
+          elif ParadasBajando[0] == PlantaActual:
+            while PlantaDestino in ParadasBajando:
+              ParadasBajando.remove(PlantaDestino)
+          elif ParadasBajando[0] < PlantaActual:      
             Estado='Bajando'
             iEstado.ActivaLeds(Estado)
             PlantaDestino=ParadasBajando[0]
         if (len(ParadasBajando)==0) and (len(ParadasSubiendo)==0):
           Estado='Libre'
           iEstado.ActivaLeds(Estado)
+          
   if Accion=='Bajar':
     if (not LeerEntrada('FCBajo')) and (PlantaActual>0) and (PlantaActual>PlantaDestino):
       Estado='Bajando'
@@ -143,21 +147,29 @@ def Planta(Accion):
       while PlantaActual in ParadasBajando:
         ParadasBajando.remove(PlantaActual)
         if PlantaActual==0 and (len(ParadasSubiendo)>0):
-          print ' bajando planta actual 0 y con paradas subiendo'
+          #print ' bajando planta actual 0 y con paradas subiendo'
           Estado='Subiendo'
           iEstado.ActivaLeds(Estado)
           PlantaDestino=ParadasSubiendo[0]
         if PlantaActual==0 and (len(ParadasSubiendo)==0):
-          print ' bajando planta actual 0 y sin paradas subiendo'
-          Estado='Libre'
-          iEstado.ActivaLeds(Estado)
+          if (len(ParadasBajando)>0):
+            if ParadasBajando[0] > 0:
+              ParadasSubiendo.append(ParadasBajando[0])
+              PlantaDestino=ParadasBajando[0]
+              Estado='Subiendo'
+              while PlantaDestino in ParadasBajando:
+                ParadasBajando.remove(PlantaDestino)
+          else:
+            #print ' bajando planta actual 0 y sin paradas subiendo'
+            Estado='Libre'
+            iEstado.ActivaLeds(Estado)
         if PlantaActual<4 and (len(ParadasSubiendo)>0) and (len(ParadasBajando)==0):
-          print ' bajando sin paradas bajando y con paradas subiendo'
+          #print ' bajando sin paradas bajando y con paradas subiendo'
           Estado='Subiendo'
           PlantaDestino=ParadasSubiendo[0]
           iEstado.ActivaLeds(Estado)
         if (len(ParadasBajando)==0) and (len(ParadasSubiendo)==0):
-          print ' bajando sin paradas ni subiendo ni bajando'
+          #print ' bajando sin paradas ni subiendo ni bajando'
           Estado='Libre'
           iEstado.ActivaLeds(Estado)
 
@@ -253,17 +265,19 @@ def ActualizarMemorias():
       ParadasSubiendo.append(4)
   if (len(ParadasSubiendo)>0):
     ParadasSubiendo.sort()
-    if Estado=='Subiendo' and PlantaActual<ParadasSubiendo[0]:
+    if (Estado=='Subiendo' or (len(ParadasBajando)==0))  and PlantaActual<ParadasSubiendo[0]:
       PlantaDestino=ParadasSubiendo[0]
+      Estado='Subiendo'
   if (len(ParadasBajando)>0):
     ParadasBajando.sort()
     ParadasBajando.reverse()
-    if Estado=='Bajando' and PlantaActual>ParadasBajando[0]:
+    if (Estado=='Bajando' or (len(ParadasSubiendo)==0))  and PlantaActual>ParadasBajando[0]:
       PlantaDestino=ParadasBajando[0]
+      Estado='Bajando'
     
-  print 'paradas subiendo '+ str(ParadasSubiendo)+' paradas bajando '+str(ParadasBajando)    
-  print 'planta actual '+ str(PlantaActual)+' planta destino'+str(PlantaDestino)
-  print Estado
+  #print 'paradas subiendo '+ str(ParadasSubiendo)+' paradas bajando '+str(ParadasBajando)    
+  #print 'planta actual '+ str(PlantaActual)+' planta destino'+str(PlantaDestino)
+  #print Estado
       
     
     
@@ -293,22 +307,29 @@ def Control():
         while PlantaDestino in ParadasBajando:
           ParadasBajando.remove(PlantaDestino)
         #print 'planta destino ' + str(PlantaDestino)
-        while PlantaDestino > PlantaActual:
-          ActualizarMemorias()
-          Estado='Subiendo'
-          Planta('Subir')
+        #while PlantaDestino > PlantaActual:
+         # ActualizarMemorias()
+          #Estado='Subiendo'
+          #Planta('Subir')
     while (PlantaActual==0) and (len(ParadasSubiendo)>0):
       PlantaDestino=ParadasSubiendo[0]
       ActualizarMemorias()
       Estado='Subiendo'
       Planta('Subir')
     while (PlantaActual>0) and (len(ParadasBajando)>0)and (Estado=='Libre' or Estado=='Bajando'):
-      PlantaDestino=ParadasBajando[0]
+      if ParadasBajando[0]<PlantaActual:
+        PlantaDestino=ParadasBajando[0]
+        Estado='Bajando'
+        Planta('Bajar')
+      else:
+        while  ParadasBajando[0]>=PlantaActual:
+          ParadasSubiendo.append(ParadasBajando[0])
+          ParadasBajando.remove(ParadasBajando[0])
       ActualizarMemorias()
-      Estado='Bajando'
-      Planta('Bajar')
+
     while (PlantaActual>0) and (len(ParadasSubiendo)>0)and (Estado=='Libre' or Estado=='Subiendo'):
-      PlantaDestino=ParadasSubiendo[0]
+      if ParadasSubiendo[0]>PlantaActual:
+        PlantaDestino=ParadasSubiendo[0]
       ActualizarMemorias()
       Estado='Subiendo'
       Planta('Subir')
